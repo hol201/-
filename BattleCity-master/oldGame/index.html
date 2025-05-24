@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="user-scalable=0">
-	<title>坦克大战</title>
+	<title>Битва танков</title>
 	<style media="screen">
 		body {
 			margin: 0;
@@ -65,13 +65,13 @@
 			display: none;
 		}
 
-		/*手机平板*/
+		/* Мобильные устройства */
 		@media screen and (min-width: 1000px) {
 			#key {
 				display: none;
 			}
 		}
-		/*按键*/
+		/* Кнопки управления */
 		#key {
 			position: absolute;
 			top: 800px;
@@ -119,30 +119,30 @@
 	<div class="game">
 		<div id="text">
 			<p>
-				方向键：W A S D <br><br>
-				AB键：H J <br><br>
-				可进行单人模式及自定义地图模式
+				Управление: W A S D <br><br>
+				Кнопки A/B: H J <br><br>
+				Доступны одиночный режим и режим редактора карт
 			</p>
 		</div>
 		<div id="game-box-border">
 			<div id="game-box"></div>
-			<!-- 角色层 -->
+			<!-- Слой с персонажами -->
 			<canvas id="canvas-role" width="416" height="416"></canvas>
-			<!-- 背景层 -->
+			<!-- Фоновый слой -->
 			<canvas id="canvas-bg" width="516" height="456"></canvas>
-			<!-- 杂项层（包括爆炸效果等） -->
+			<!-- Слой эффектов -->
 			<canvas id="canvas-misc" width="516" height="456"></canvas>
 		</div>
 	</div>
 	<div id="key">
-		<button type="button" value="87" class="btn_u">上</button>
-		<button type="button" value="68" class="btn_r">右</button>
-		<button type="button" value="83" class="btn_d">下</button>
-		<button type="button" value="65" class="btn_l">左</button>
+		<button type="button" value="87" class="btn_u">Вверх</button>
+		<button type="button" value="68" class="btn_r">Вправо</button>
+		<button type="button" value="83" class="btn_d">Вниз</button>
+		<button type="button" value="65" class="btn_l">Влево</button>
 		<button type="button" value="74" class="btn_a">A</button>
 		<button type="button" value="72" class="btn_b">B</button>
 	</div>
-	<!-- 提前缓存图片 -->
+	<!-- Прелоад изображений -->
 	<div class="hide">
 		<img src="src/image/UI.png" id="UI">
 		<img src="src/image/myTank.png" id="myTank">
@@ -153,7 +153,7 @@
 		<img src="src/image/Boom.png" id="boom">
 		<img src="src/image/getScore.png" id="getScore">
 	</div>
-	<!-- 提前缓存音频文件 -->
+	<!-- Прелоад аудио -->
 	<div class="hide">
 		<audio src="src/sound/bonus/life.mp3" id="life"></audio>
 		<audio src="src/sound/bonus/bomb.mp3" id="bomb"></audio>
@@ -167,14 +167,9 @@
 		<audio src="src/sound/start.mp3" id="start"></audio>
 	</div>
 
-
-	<!-- 全局变量及公用函数 -->
+	<!-- Скрипты -->
 	<script type="text/javascript" src='src/comm.js'></script>
-
-	<!-- 键盘事件 -->
 	<script type="text/javascript" src='src/keyboard/key.js'></script>
-
-	<!-- 游戏对象相关 -->
 	<script type="text/javascript" src='src/object/explode.js'></script>
 	<script type="text/javascript" src='src/object/bonus.js'></script>
 	<script type="text/javascript" src='src/object/mover.js'></script>
@@ -182,17 +177,11 @@
 	<script type="text/javascript" src='src/object/tank.js'></script>
 	<script type="text/javascript" src='src/object/player.js'></script>
 	<script type="text/javascript" src='src/object/enemyTank.js'></script>
-
-	<!-- UI相关 -->
 	<script type="text/javascript" src='src/UI/UI.js'></script>
-
-	<!-- 游戏地图相关 -->
 	<script type="text/javascript" src='src/gameMap/drawMap.js'></script>
 	<script type="text/javascript" src='src/gameMap/mapEditor.js'></script>
 	<script type="text/javascript" src='src/gameMap/mapData.js'></script>
 	<script type="text/javascript" src='src/gameMap/misc.js'></script>
-
-	<!-- 游戏入口 -->
 	<script type="text/javascript" src='src/gameLoader.js'></script>
 </body>
 </html>

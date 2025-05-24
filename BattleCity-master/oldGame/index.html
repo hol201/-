@@ -117,6 +117,9 @@
 </head>
 <body onselectstart="return false">
 	<div class="game">
+		<div id="start-screen" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+  <button id="start-btn">Начать игру</button>
+</div>
 		<div id="text">
 			<p>
 				Управление: W A S D <br><br>
@@ -168,6 +171,14 @@
 	</div>
 
 	<!-- Скрипты -->
+	<script>
+  document.getElementById('start-btn').addEventListener('click', () => {
+    // Запуск игры и звука
+    startGame();
+    document.getElementById('start').play().catch(console.error);
+    document.getElementById('start-screen').remove();
+  });
+</script>
 	<script type="text/javascript" src='src/comm.js'></script>
 	<script type="text/javascript" src='src/keyboard/key.js'></script>
 	<script type="text/javascript" src='src/object/explode.js'></script>

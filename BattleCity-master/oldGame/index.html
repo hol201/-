@@ -1,214 +1,284 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="user-scalable=0">
-	<title>Битва танков</title>
-	<style media="screen">
-		body {
-			margin: 0;
-			color: #87968e;
-			background-color: #660;
-			font-family: "Helvetica Neue",Helvetica,Arial,'Microsoft YaHei',sans-serif,'Lato', Calibri;
-		}
-		@font-face {
-			font-family: prstart;
-			src: url('font/prstart.ttf');
-		}
-		.game {
-			position: relative;
-			margin: 100px auto;
-			width: 530px;
-			height: 470px;
-		}
-		#text {
-			position: absolute;
-			left: -200px;
-			height: 456px;
-			width: 200px;
-		}
-		#text p {
-			font-size: 1.17em;
-			font-weight: bold;
-			padding-top: 150px;
-		}
-		#game-box-border {
-			position: absolute;
-			width: 516px;
-			height: 456px;
-			background-color: #000;
-			border: #630 solid 4px;
-		}
-		#game-box {
-			position: absolute;
-			top: 20px;
-			left: 35px;
-			width: 416px;
-			height: 416px;
-			background-color: #000;
-		}
-		#canvas-bg,
-		#canvas-misc {
-			position: absolute;
-			top: 0;
-			left: 0;
-		}
-		#canvas-misc {
-			z-index: 2;
-		}
-		#canvas-role {
-			position: absolute;
-			top: 20px;
-			left: 35px;
-		}
-		.hide {
-			display: none;
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=0">
+    <title>Битва танков</title>
+    <style media="screen">
+        body {
+            margin: 0;
+            color: #87968e;
+            background-color: #660;
+            font-family: "Helvetica Neue", Helvetica, Arial, 'Microsoft YaHei', sans-serif, 'Lato', Calibri;
+        }
+        
+        @font-face {
+            font-family: prstart;
+            src: url('font/prstart.ttf');
+        }
 
-		/* Мобильные устройства */
-		@media screen and (min-width: 1000px) {
-			#key {
-				display: none;
-			}
-		}
-		/* Кнопки управления */
-		#key {
-			position: absolute;
-			top: 800px;
-			left: 50%;
-			margin-left: -400px;
-			width: 800px;
-			height: 0;
-		}
-		#key button {
-			position: absolute;
-			width: 150px;
-			height: 150px;
-			border-radius: 30px;
-			outline:none;
-			color: #87968e;
-			font-size: 40px;
-		}
-		.btn_u {
-			top: 0;
-			left: 200px;
-		}
-		.btn_r {
-			top: 200px;
-			left: 400px;
-		}
-		.btn_d {
-			top: 200px;
-			left: 200px;
-		}
-		.btn_l {
-			top: 200px;
-			left: 0;
-		}
-		.btn_a {
-			top: 0;
-			right: 0;
-		}
-		.btn_b {
-			top: 250px;
-			right: 0;
-		}
-	</style>
+        .game {
+            position: relative;
+            margin: 100px auto;
+            width: 530px;
+            height: 470px;
+        }
+
+        /* Добавлены стили для стартового экрана */
+        #start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #start-btn {
+            font-size: 24px;
+            padding: 15px 30px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        #audio-warning {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: red;
+            z-index: 1001;
+        }
+
+        /* Остальные стили остаются без изменений */
+        #text {
+            position: absolute;
+            left: -200px;
+            height: 456px;
+            width: 200px;
+        }
+        #text p {
+            font-size: 1.17em;
+            font-weight: bold;
+            padding-top: 150px;
+        }
+        #game-box-border {
+            position: absolute;
+            width: 516px;
+            height: 456px;
+            background-color: #000;
+            border: #630 solid 4px;
+        }
+        #game-box {
+            position: absolute;
+            top: 20px;
+            left: 35px;
+            width: 416px;
+            height: 416px;
+            background-color: #000;
+        }
+        #canvas-bg,
+        #canvas-misc {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #canvas-misc {
+            z-index: 2;
+        }
+        #canvas-role {
+            position: absolute;
+            top: 20px;
+            left: 35px;
+        }
+        .hide {
+            display: none;
+        }
+
+        @media screen and (min-width: 1000px) {
+            #key {
+                display: none;
+            }
+        }
+        
+        #key {
+            position: absolute;
+            top: 800px;
+            left: 50%;
+            margin-left: -400px;
+            width: 800px;
+            height: 0;
+        }
+        #key button {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 30px;
+            outline: none;
+            color: #87968e;
+            font-size: 40px;
+        }
+        .btn_u {
+            top: 0;
+            left: 200px;
+        }
+        .btn_r {
+            top: 200px;
+            left: 400px;
+        }
+        .btn_d {
+            top: 200px;
+            left: 200px;
+        }
+        .btn_l {
+            top: 200px;
+            left: 0;
+        }
+        .btn_a {
+            top: 0;
+            right: 0;
+        }
+        .btn_b {
+            top: 250px;
+            right: 0;
+        }
+    </style>
 </head>
 <body onselectstart="return false">
-	<div class="game">
-		<div id="start-screen" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-  <button id="start-btn">Начать игру</button>
-</div>
-		<div id="audio-warning" style="display: none; position: absolute; top: 10px; left: 10px; color: red;">
-    Для работы звука нажмите здесь!
-</div>
-		<div id="text">
-			<p>
-				Управление: W A S D <br><br>
-				Кнопки A/B: H J <br><br>
-				Доступны одиночный режим и режим редактора карт
-			</p>
-		</div>
-		<div id="game-box-border">
-			<div id="game-box"></div>
-			<!-- Слой с персонажами -->
-			<canvas id="canvas-role" width="416" height="416"></canvas>
-			<!-- Фоновый слой -->
-			<canvas id="canvas-bg" width="516" height="456"></canvas>
-			<!-- Слой эффектов -->
-			<canvas id="canvas-misc" width="516" height="456"></canvas>
-		</div>
-	</div>
-	<div id="key">
-		<button type="button" value="87" class="btn_u">Вверх</button>
-		<button type="button" value="68" class="btn_r">Вправо</button>
-		<button type="button" value="83" class="btn_d">Вниз</button>
-		<button type="button" value="65" class="btn_l">Влево</button>
-		<button type="button" value="74" class="btn_a">A</button>
-		<button type="button" value="72" class="btn_b">B</button>
-	</div>
-	<!-- Прелоад изображений -->
-	<div class="hide">
-		<img src="src/image/UI.png" id="UI">
-		<img src="src/image/myTank.png" id="myTank">
-		<img src="src/image/enemyTank.png" id="enemyTank">
-		<img src="src/image/bonus.png" id="bonus">
-		<img src="src/image/Misc.png" id="Misc">
-		<img src="src/image/brick.png" id="brick">
-		<img src="src/image/Boom.png" id="boom">
-		<img src="src/image/getScore.png" id="getScore">
-	</div>
-	<!-- Прелоад аудио -->
-	<div class="hide">
-		<audio src="src/sound/bonus/life.mp3" id="life"></audio>
-		<audio src="src/sound/bonus/bomb.mp3" id="bomb"></audio>
-		<audio src="src/sound/bonus/misc.mp3" id="miscSound"></audio>
-		<audio src="src/sound/attack.mp3" id="attack"></audio>
-		<audio src="src/sound/explode.mp3" id="explode"></audio>
-		<audio src="src/sound/attackOver.mp3" id="attackOver"></audio>
-		<audio src="src/sound/pause.mp3" id="pause"></audio>
-		<audio src="src/sound/eat.mp3" id="eat"></audio>
-		<audio src="src/sound/over.mp3" id="over"></audio>
-		<audio src="src/sound/start.mp3" id="start"></audio>
-	</div>
+    <div class="game">
+        <div id="start-screen">
+            <button id="start-btn">Начать игру</button>
+        </div>
+        <div id="audio-warning">
+            Для работы звука нажмите здесь!
+        </div>
+        <div id="text">
+            <p>
+                Управление: W A S D <br><br>
+                Кнопки A/B: H J <br><br>
+                Доступны одиночный режим и режим редактора карт
+            </p>
+        </div>
+        <div id="game-box-border">
+            <div id="game-box"></div>
+            <canvas id="canvas-role" width="416" height="416"></canvas>
+            <canvas id="canvas-bg" width="516" height="456"></canvas>
+            <canvas id="canvas-misc" width="516" height="456"></canvas>
+        </div>
+    </div>
+    <div id="key">
+        <button type="button" value="87" class="btn_u">Вверх</button>
+        <button type="button" value="68" class="btn_r">Вправо</button>
+        <button type="button" value="83" class="btn_d">Вниз</button>
+        <button type="button" value="65" class="btn_l">Влево</button>
+        <button type="button" value="74" class="btn_a">A</button>
+        <button type="button" value="72" class="btn_b">B</button>
+    </div>
 
-	<!-- Скрипты -->
-	<script>
-  document.getElementById('start-btn').addEventListener('click', () => {
-    // Запуск игры и звука
-    startGame();
-    document.getElementById('start').play().catch(console.error);
-    document.getElementById('start-screen').remove();
-  });
-</script>
-	<script>
-    // Проверка состояния звука через 5 секунд
-    setTimeout(() => {
-        if (isMobile && document.getElementById('start').paused) {
-            document.getElementById('audio-warning').style.display = 'block';
+    <!-- Прелоад ресурсов -->
+    <div class="hide">
+        <img src="src/image/UI.png" id="UI">
+        <img src="src/image/myTank.png" id="myTank">
+        <img src="src/image/enemyTank.png" id="enemyTank">
+        <img src="src/image/bonus.png" id="bonus">
+        <img src="src/image/Misc.png" id="Misc">
+        <img src="src/image/brick.png" id="brick">
+        <img src="src/image/Boom.png" id="boom">
+        <img src="src/image/getScore.png" id="getScore">
+    </div>
+
+    <div class="hide">
+        <audio src="src/sound/bonus/life.mp3" id="life"></audio>
+        <audio src="src/sound/bonus/bomb.mp3" id="bomb"></audio>
+        <audio src="src/sound/bonus/misc.mp3" id="miscSound"></audio>
+        <audio src="src/sound/attack.mp3" id="attack"></audio>
+        <audio src="src/sound/explode.mp3" id="explode"></audio>
+        <audio src="src/sound/attackOver.mp3" id="attackOver"></audio>
+        <audio src="src/sound/pause.mp3" id="pause"></audio>
+        <audio src="src/sound/eat.mp3" id="eat"></audio>
+        <audio src="src/sound/over.mp3" id="over"></audio>
+        <audio src="src/sound/start.mp3" id="start"></audio>
+    </div>
+
+    <!-- Основные скрипты -->
+    <script type="text/javascript" src='src/comm.js'></script>
+    <script type="text/javascript" src='src/keyboard/key.js'></script>
+    <script type="text/javascript" src='src/object/explode.js'></script>
+    <script type="text/javascript" src='src/object/bonus.js'></script>
+    <script type="text/javascript" src='src/object/mover.js'></script>
+    <script type="text/javascript" src='src/object/bullet.js'></script>
+    <script type="text/javascript" src='src/object/tank.js'></script>
+    <script type="text/javascript" src='src/object/player.js'></script>
+    <script type="text/javascript" src='src/object/enemyTank.js'></script>
+    <script type="text/javascript" src='src/UI/UI.js'></script>
+    <script type="text/javascript" src='src/gameMap/drawMap.js'></script>
+    <script type="text/javascript" src='src/gameMap/mapEditor.js'></script>
+    <script type="text/javascript" src='src/gameMap/mapData.js'></script>
+    <script type="text/javascript" src='src/gameMap/misc.js'></script>
+    <script type="text/javascript" src='src/gameLoader.js'></script>
+
+    <!-- Инициализация игры -->
+    <script>
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let audioContext;
+
+        // Инициализация аудио
+        function initAudioContext() {
+            if (typeof AudioContext !== 'undefined') {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
-    }, 5000);
-		if (isMobile) {
-    document.body.addEventListener('touchstart', () => {
-        if (navigator.vibrate) navigator.vibrate(50);
-    }, { once: true });
-}
-</script>
-	<script type="text/javascript" src='src/comm.js'></script>
-	<script type="text/javascript" src='src/keyboard/key.js'></script>
-	<script type="text/javascript" src='src/object/explode.js'></script>
-	<script type="text/javascript" src='src/object/bonus.js'></script>
-	<script type="text/javascript" src='src/object/mover.js'></script>
-	<script type="text/javascript" src='src/object/bullet.js'></script>
-	<script type="text/javascript" src='src/object/tank.js'></script>
-	<script type="text/javascript" src='src/object/player.js'></script>
-	<script type="text/javascript" src='src/object/enemyTank.js'></script>
-	<script type="text/javascript" src='src/UI/UI.js'></script>
-	<script type="text/javascript" src='src/gameMap/drawMap.js'></script>
-	<script type="text/javascript" src='src/gameMap/mapEditor.js'></script>
-	<script type="text/javascript" src='src/gameMap/mapData.js'></script>
-	<script type="text/javascript" src='src/gameMap/misc.js'></script>
-	<script type="text/javascript" src='src/gameLoader.js'></script>
+
+        // Обработчик запуска игры
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            try {
+                initAudioContext();
+                await document.getElementById('start').play();
+                document.getElementById('start-screen').style.display = 'none';
+                
+                if (typeof startGame === 'function') {
+                    startGame();
+                }
+            } catch (error) {
+                console.error('Ошибка запуска:', error);
+                document.getElementById('audio-warning').style.display = 'block';
+            }
+        });
+
+        // Проверка состояния звука
+        setTimeout(() => {
+            if (isMobile && document.getElementById('start').paused) {
+                document.getElementById('audio-warning').style.display = 'block';
+            }
+        }, 5000);
+
+        // Вибрация для мобильных
+        if (isMobile && navigator.vibrate) {
+            document.body.addEventListener('touchstart', () => {
+                navigator.vibrate(50);
+            }, { once: true });
+        }
+
+        // Глобальная функция для воспроизведения звука
+        window.playSound = (id) => {
+            const audio = document.getElementById(id);
+            if (!audio) return;
+
+            try {
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                audio.currentTime = 0;
+                audio.play();
+            } catch (error) {
+                console.error('Ошибка воспроизведения:', error);
+            }
+        };
+    </script>
 </body>
 </html>

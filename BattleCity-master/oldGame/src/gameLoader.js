@@ -1,173 +1,88 @@
 /**
- * gameLoader.js - Исправленная версия с отладкой
+ * 初始化
  */
+// Файл: src/gameLoader.js
 
-let audioContext;
-let isAudioUnlocked = false;
-let oClass;
-let cxt = {}; // Добавляем объект контекста, если он не был определен
+let audioContext; // Добавляем общий аудио контекст
 
-// Проверка мобильного устройства
+// Проверка на мобильное устройство и разблокировка звука
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-// Функция разблокировки аудио
+// Функция для разблокировки аудио
 function unlockAudio() {
-  if (isAudioUnlocked) return;
-  console.log('Attempting audio unlock...');
-
-  try {
-    // Разблокировка Web Audio API
-    if (typeof AudioContext !== 'undefined' && !audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    if (audioContext) {
-      const buffer = audioContext.createBuffer(1, 1, 22050);
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start(0);
-    }
-
-    // Разблокировка HTML5 Audio
-    document.querySelectorAll('audio').forEach(audio => {
-      audio.play().then(() => {
-        audio.pause();
-        audio.currentTime = 0;
-      }).catch(e => console.error('HTML5 audio unlock error:', e));
+  const audio = document.getElementById('start');
+  if (audio) {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(error => {
+      console.error('Audio unlock failed:', error);
     });
-
-    isAudioUnlocked = true;
-    console.log('Audio successfully unlocked');
-  } catch (error) {
-    console.error('Audio unlock failed:', error);
   }
 }
 
-// Универсальная функция воспроизведения звука
-function playSound(id) {
-  if (!isAudioUnlocked) {
-    console.warn(`Audio blocked - cannot play ${id}`);
-    return;
-  }
-
-  const audio = document.getElementById(id);
-  if (!audio) {
-    console.error(`Audio element not found: ${id}`);
-    return;
-  }
-
-  try {
-    audio.currentTime = 0;
-    audio.play().catch(error => console.error(`Play error for ${id}:`, error));
-  } catch (error) {
-    console.error(`Audio play failed for ${id}:`, error);
-  }
+if (isMobile) {
+  document.body.addEventListener('touchstart', unlockAudio, { once: true });
 }
 
-/**
- * Основная инициализация игры
- */
 function init() {
-  console.log('Initializing game...');
-  
-  try {
-    // Инициализация контекстов канваса
-    cxt.bg = document.getElementById('canvas-bg').getContext('2d');
-    cxt.misc = document.getElementById('canvas-misc').getContext('2d');
-    
-    // Инициализация Audio Context
-    if (typeof AudioContext !== 'undefined') {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    // Обработчики для мобильных устройств
-    if (isMobile) {
-      document.body.addEventListener('touchstart', unlockAudio, { once: true });
-      document.body.addEventListener('touchend', unlockAudio, { once: true });
-    }
-
-    // Инициализация игровых классов
     oClass = {
-      ui: new UI(),
-      mapEditor: new MapEditor(),
-      drawMap: new DrawMap()
+        ui: new UI(),
+        mapEditor: new MapEditor(),
+        drawMap: new DrawMap()
     };
 
-    // Настройка шрифтов
-    cxt.bg.font = "15px prstart";
-    cxt.bg.fillStyle = '#000';
-    cxt.misc.font = "15px prstart";
+    // Инициализация Audio Context для мобильных устройств
+    if (isMobile && typeof AudioContext !== 'undefined') {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
 
-    // Инициализация управления
+    // 规定所用的字体及颜色
+    cxt.bg.font      = "15px prstart";
+    cxt.bg.fillStyle = '#000';
+    cxt.misc.font    = "15px prstart";
+
+    // 键盘按下事件函数
     keyEvent();
 
-    // Запуск UI
+    // UI初始化
     oClass.ui.init();
-    
-    console.log('Game initialized successfully');
-  } catch (error) {
-    console.error('Initialization error:', error);
-    throw error;
-  }
 }
 
-/**
- * Игровой цикл
- */
+// 修改后的游戏主循环
 async function gameLoop() {
-  try {
-    // Отрисовка UI
-    if (draw.ui && oClass.ui) oClass.ui.draw();
+    try {
+        // 绘制游戏的UI界面
+        draw.ui && oClass.ui.draw();
 
-    // Отрисовка редактора карт
-    if (draw.setMap && oClass.mapEditor) oClass.mapEditor.draw();
+        // 绘制自定义地图界面
+        draw.setMap && oClass.mapEditor.draw();
 
-    // Отрисовка игровой карты
-    if (draw.map && oClass.drawMap) oClass.drawMap.draw(stage.num - 1);
+        // 绘制地图
+        draw.map && oClass.drawMap.draw(stage.num - 1);
 
-    // Обработка игровых объектов
-    if (draw.obj) {
-      if (typeof drawTank === 'function') drawTank();
-      if (typeof drawBullet === 'function') drawBullet();
-      if (typeof bonus === 'function') bonus();
+        // 处理游戏对象
+        if (draw.obj) {
+            drawTank();                        
+            drawBullet();                     
+            bonus();                          
+        }
+
+        // 恢复音频上下文 при необходимости (для iOS)
+        if (isMobile && audioContext && audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
+    } catch (error) {
+        console.error('Game loop error:', error);
     }
-
-    // Восстановление аудиоконтекста для iOS
-    if (isMobile && audioContext && audioContext.state === 'suspended') {
-      await audioContext.resume();
-    }
-  } catch (error) {
-    console.error('Game loop error:', error);
-  }
-
-  requestAnimFrame(gameLoop);
+    
+    requestAnimFrame(gameLoop);
 }
 
-/**
- * Точка входа в игру
- */
-window.onload = function() {
-  try {
+// 游戏入口
+window.onload = function () {
     init();
     gameLoop().catch(error => {
-      console.error('Game loop initialization failed:', error);
+        console.error('Game initialization failed:', error);
     });
-  } catch (error) {
-    console.error('Window load error:', error);
-  }
-};
-
-/**
- * Полифил для requestAnimationFrame
- */
-const requestAnimFrame = (() => {
-  return window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function(callback) {
-      window.setTimeout(callback, 1000 / 60);
-    };
-})();
+}

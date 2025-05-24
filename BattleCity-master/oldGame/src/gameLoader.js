@@ -1,7 +1,6 @@
 /**
  * 初始化
  */
-// Файл: src/gameLoader.js
 
 let audioContext; // Добавляем общий аудио контекст
 

@@ -66,4 +66,4 @@ window.onload = function () {
 	gameLoop();
 }
 
-initGame();
+

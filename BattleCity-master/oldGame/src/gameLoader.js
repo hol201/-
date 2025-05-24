@@ -1,10 +1,11 @@
 /**
- * Инициализация игры и управление звуком
+ * gameLoader.js - Исправленная версия с отладкой
  */
 
 let audioContext;
 let isAudioUnlocked = false;
 let oClass;
+let cxt = {}; // Добавляем объект контекста, если он не был определен
 
 // Проверка мобильного устройства
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -12,9 +13,14 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // Функция разблокировки аудио
 function unlockAudio() {
   if (isAudioUnlocked) return;
+  console.log('Attempting audio unlock...');
 
   try {
     // Разблокировка Web Audio API
+    if (typeof AudioContext !== 'undefined' && !audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
     if (audioContext) {
       const buffer = audioContext.createBuffer(1, 1, 22050);
       const source = audioContext.createBufferSource();
@@ -25,22 +31,31 @@ function unlockAudio() {
 
     // Разблокировка HTML5 Audio
     document.querySelectorAll('audio').forEach(audio => {
-      audio.play().then(() => audio.pause()).catch(() => {});
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch(e => console.error('HTML5 audio unlock error:', e));
     });
 
     isAudioUnlocked = true;
-    console.log('Audio unlocked');
+    console.log('Audio successfully unlocked');
   } catch (error) {
-    console.error('Audio unlock error:', error);
+    console.error('Audio unlock failed:', error);
   }
 }
 
 // Универсальная функция воспроизведения звука
 function playSound(id) {
-  if (!isAudioUnlocked) return;
+  if (!isAudioUnlocked) {
+    console.warn(`Audio blocked - cannot play ${id}`);
+    return;
+  }
 
   const audio = document.getElementById(id);
-  if (!audio) return;
+  if (!audio) {
+    console.error(`Audio element not found: ${id}`);
+    return;
+  }
 
   try {
     audio.currentTime = 0;
@@ -54,34 +69,47 @@ function playSound(id) {
  * Основная инициализация игры
  */
 function init() {
-  // Инициализация Audio Context
-  if (typeof AudioContext !== 'undefined') {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  console.log('Initializing game...');
+  
+  try {
+    // Инициализация контекстов канваса
+    cxt.bg = document.getElementById('canvas-bg').getContext('2d');
+    cxt.misc = document.getElementById('canvas-misc').getContext('2d');
+    
+    // Инициализация Audio Context
+    if (typeof AudioContext !== 'undefined') {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // Обработчики для мобильных устройств
+    if (isMobile) {
+      document.body.addEventListener('touchstart', unlockAudio, { once: true });
+      document.body.addEventListener('touchend', unlockAudio, { once: true });
+    }
+
+    // Инициализация игровых классов
+    oClass = {
+      ui: new UI(),
+      mapEditor: new MapEditor(),
+      drawMap: new DrawMap()
+    };
+
+    // Настройка шрифтов
+    cxt.bg.font = "15px prstart";
+    cxt.bg.fillStyle = '#000';
+    cxt.misc.font = "15px prstart";
+
+    // Инициализация управления
+    keyEvent();
+
+    // Запуск UI
+    oClass.ui.init();
+    
+    console.log('Game initialized successfully');
+  } catch (error) {
+    console.error('Initialization error:', error);
+    throw error;
   }
-
-  // Обработчики для мобильных устройств
-  if (isMobile) {
-    document.body.addEventListener('touchstart', unlockAudio, { once: true });
-    document.body.addEventListener('touchend', unlockAudio, { once: true });
-  }
-
-  // Инициализация игровых классов
-  oClass = {
-    ui: new UI(),
-    mapEditor: new MapEditor(),
-    drawMap: new DrawMap()
-  };
-
-  // Настройка шрифтов
-  cxt.bg.font = "15px prstart";
-  cxt.bg.fillStyle = '#000';
-  cxt.misc.font = "15px prstart";
-
-  // Инициализация управления
-  keyEvent();
-
-  // Запуск UI
-  oClass.ui.init();
 }
 
 /**
@@ -90,19 +118,19 @@ function init() {
 async function gameLoop() {
   try {
     // Отрисовка UI
-    draw.ui && oClass.ui.draw();
+    if (draw.ui && oClass.ui) oClass.ui.draw();
 
     // Отрисовка редактора карт
-    draw.setMap && oClass.mapEditor.draw();
+    if (draw.setMap && oClass.mapEditor) oClass.mapEditor.draw();
 
     // Отрисовка игровой карты
-    draw.map && oClass.drawMap.draw(stage.num - 1);
+    if (draw.map && oClass.drawMap) oClass.drawMap.draw(stage.num - 1);
 
     // Обработка игровых объектов
     if (draw.obj) {
-      drawTank();
-      drawBullet();
-      bonus();
+      if (typeof drawTank === 'function') drawTank();
+      if (typeof drawBullet === 'function') drawBullet();
+      if (typeof bonus === 'function') bonus();
     }
 
     // Восстановление аудиоконтекста для iOS
@@ -120,14 +148,18 @@ async function gameLoop() {
  * Точка входа в игру
  */
 window.onload = function() {
-  init();
-  gameLoop().catch(error => {
-    console.error('Game initialization failed:', error);
-  });
+  try {
+    init();
+    gameLoop().catch(error => {
+      console.error('Game loop initialization failed:', error);
+    });
+  } catch (error) {
+    console.error('Window load error:', error);
+  }
 };
 
 /**
- * Вспомогательные функции
+ * Полифил для requestAnimationFrame
  */
 const requestAnimFrame = (() => {
   return window.requestAnimationFrame ||

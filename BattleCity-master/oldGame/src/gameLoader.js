@@ -1,6 +1,22 @@
 /**
  * 初始化
  */
+// Файл: src/gameLoader.js
+
+// Проверка на мобильное устройство и разблокировка звука
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+if (isMobile) {
+  document.body.addEventListener('touchstart', () => {
+    const audio = document.getElementById('start');
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+  }, { once: true });
+}
+
+
 function init() {
 	oClass = {
 		ui: new UI(),
@@ -49,3 +65,5 @@ window.onload = function () {
 	init();
 	gameLoop();
 }
+
+initGame();

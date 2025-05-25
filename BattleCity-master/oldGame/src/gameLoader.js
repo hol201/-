@@ -1,68 +1,164 @@
-/**
- * 初始化
+// Файл: src/gameLoader.js
+
+/** 
+ * Инициализация аудио системы 
  */
+let audioContext;
+const sounds = new Map();
 
-
-// Проверка на мобильное устройство и разблокировка звука
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-if (isMobile) {
-  document.body.addEventListener('touchstart', () => {
-    const audio = document.getElementById('start');
-    audio.play().then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-    });
-  }, { once: true });
+function initAudio() {
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (error) {
+    console.warn('Web Audio API не поддерживается:', error);
+  }
 }
 
+/**
+ * Воспроизведение звука
+ */
+function playSound(id) {
+  const audio = document.getElementById(id);
+  if (!audio) return;
+
+  try {
+    // Для мобильных устройств
+    if (audioContext?.state === 'suspended') {
+      audioContext.resume();
+    }
+    
+    audio.currentTime = 0;
+    audio.play().catch(e => {
+      console.error('Ошибка воспроизведения:', id, e);
+    });
+  } catch (error) {
+    console.error('Критическая ошибка звука:', error);
+  }
+}
+
+/** 
+ * Инициализация игры 
+ */
+let gameInitialized = false;
 
 function init() {
-	oClass = {
-		ui: new UI(),
-		mapEditor: new MapEditor(),
-		drawMap: new DrawMap()
-	};
+  if (gameInitialized) return;
+  gameInitialized = true;
 
-	// 规定所用的字体及颜色
-	cxt.bg.font      = "15px prstart";
-	cxt.bg.fillStyle = '#000';
-	cxt.misc.font    = "15px prstart";
+  // Инициализация аудио
+  initAudio();
 
-	// 键盘按下事件函数
-	keyEvent();
+  // Основные классы
+  window.oClass = {
+    ui: new UI(),
+    mapEditor: new MapEditor(),
+    drawMap: new DrawMap()
+  };
 
-	// UI初始化
-	oClass.ui.init();
+  // Настройка контекста
+  const setupContext = ctx => {
+    ctx.font = "15px prstart";
+    ctx.fillStyle = '#000';
+    ctx.imageSmoothingEnabled = false;
+  };
+
+  setupContext(cxt.bg);
+  setupContext(cxt.misc);
+
+  // Управление
+  initControls();
+  oClass.ui.init();
 }
 
-/*
- *循环函数，用来逐帧更新画布
+/**
+ * Инициализация управления
  */
-function gameLoop() {
-	// 绘制游戏的UI界面
-	draw.ui && oClass.ui.draw();
+function initControls() {
+  // Клавиатура
+  const pressedKeys = new Set();
+  
+  window.addEventListener('keydown', e => {
+    pressedKeys.add(e.key.toLowerCase());
+    handleKeyPress(e.key);
+  });
 
-	// 绘制自定义地图界面
-	draw.setMap && oClass.mapEditor.draw();
+  window.addEventListener('keyup', e => {
+    pressedKeys.delete(e.key.toLowerCase());
+  });
 
-	// 绘制地图（地图只有当UI界面的关卡选择界面准备结束的时候才会绘制一次）
-	draw.map && oClass.drawMap.draw(stage.num - 1);
+  // Мобильное управление
+  if (isMobile) {
+    document.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('touchstart', e => {
+        const action = e.target.dataset.action;
+        pressedKeys.add(action);
+        handleKeyPress(action);
+      });
 
-	// 当可以绘制游戏之时开始处理坦克，子弹，奖励的相关代码
-	if (draw.obj) {
-		drawTank();                        
-		drawBullet();                     
-		bonus();                          
-	}
-
-	// 循环执行函数
-	requestAnimFrame(gameLoop);
+      btn.addEventListener('touchend', e => {
+        pressedKeys.delete(e.target.dataset.action);
+      });
+    });
+  }
 }
 
-// 游戏入口
-window.onload = function () {
-	init();
-	gameLoop();
+/** 
+ * Основной игровой цикл 
+ */
+let lastSoundTime = 0;
+
+function gameLoop(timestamp) {
+  // Отрисовка интерфейса
+  draw.ui && oClass.ui.draw();
+  
+  // Отрисовка карты
+  draw.setMap && oClass.mapEditor.draw();
+  draw.map && oClass.drawMap.draw(stage.num - 1);
+
+  // Игровая логика
+  if (draw.obj) {
+    drawTank();
+    drawBullet();
+    bonus();
+
+    // Пример воспроизведения звука выстрела
+    if (shootingCondition) {
+      const now = Date.now();
+      if (now - lastSoundTime > 200) {
+        playSound('shoot-sound');
+        lastSoundTime = now;
+      }
+    }
+  }
+
+  requestAnimationFrame(gameLoop);
 }
 
+/** 
+ * Запуск игры 
+ */
+function startGame() {
+  playSound('start-sound');
+  init();
+  gameLoop();
+}
+
+// Инициализация
+const isMobile = /* ... */;
+
+window.addEventListener('load', () => {
+  // Разблокировка аудио
+  const unlock = () => {
+    if (audioContext && audioContext.state !== 'running') {
+      audioContext.resume();
+    }
+    document.removeEventListener('click', unlock);
+    document.removeEventListener('touchstart', unlock);
+  };
+
+  document.addEventListener('click', unlock);
+  document.addEventListener('touchstart', unlock);
+
+  // Старт игры
+  startGame();
+});

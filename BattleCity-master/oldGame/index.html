@@ -1,188 +1,160 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Танковая Битва</title>
-    <style>
-        /* Стили активации звука */
-        #audio-init {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        #audio-init button {
-            padding: 20px 40px;
-            font-size: 24px;
-            background: #2ecc71;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="user-scalable=0">
+	<title>Битва танков</title>
+	<style media="screen">
+		body {
+			margin: 0;
+			color: #87968e;
+			background-color: #660;
+			font-family: "Helvetica Neue",Helvetica,Arial,'Microsoft YaHei',sans-serif,'Lato', Calibri;
+		}
+		@font-face {
+			font-family: prstart;
+			src: url('font/prstart.ttf');
+		}
+		.game {
+			position: relative;
+			margin: 100px auto;
+			width: 530px;
+			height: 470px;
+		}
+		#text {
+			position: absolute;
+			left: -200px;
+			height: 456px;
+			width: 200px;
+		}
+		#text p {
+			font-size: 1.17em;
+			font-weight: bold;
+			padding-top: 150px;
+		}
+		#game-box-border {
+			position: absolute;
+			width: 516px;
+			height: 456px;
+			background-color: #000;
+			border: #630 solid 4px;
+		}
+		#game-box {
+			position: absolute;
+			top: 20px;
+			left: 35px;
+			width: 416px;
+			height: 416px;
+			background-color: #000;
+		}
+		#canvas-bg,
+		#canvas-misc {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		#canvas-misc {
+			z-index: 2;
+		}
+		#canvas-role {
+			position: absolute;
+			top: 20px;
+			left: 35px;
+		}
+		.hide {
+			display: none;
+		}
 
-        /* Основные стили игры */
-        body {
-            margin: 0;
-            color: #87968e;
-            background-color: #660;
-            font-family: "Helvetica Neue", Helvetica, Arial, 'Microsoft YaHei', sans-serif;
-            overflow: hidden;
-        }
-
-        @font-face {
-            font-family: prstart;
-            src: url('font/prstart.ttf');
-        }
-
-        .game {
-            position: relative;
-            margin: 100px auto;
-            width: 530px;
-            height: 470px;
-        }
-
-        #text {
-            position: absolute;
-            left: -200px;
-            height: 456px;
-            width: 200px;
-        }
-
-        #text p {
-            font-size: 1.17em;
-            font-weight: bold;
-            padding-top: 150px;
-        }
-
-        #game-box-border {
-            position: absolute;
-            width: 516px;
-            height: 456px;
-            background-color: #000;
-            border: #630 solid 4px;
-        }
-
-        #game-box {
-            position: absolute;
-            top: 20px;
-            left: 35px;
-            width: 416px;
-            height: 416px;
-            background-color: #000;
-        }
-
-        canvas {
-            image-rendering: pixelated;
-        }
-
-        #canvas-bg,
-        #canvas-misc {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        #canvas-misc {
-            z-index: 2;
-        }
-
-        #canvas-role {
-            position: absolute;
-            top: 20px;
-            left: 35px;
-        }
-
-        .hide {
-            display: none;
-        }
-
-        /* Мобильное управление */
-        #key {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            display: none;
-            justify-content: space-between;
-            touch-action: none;
-        }
-
-        #key button {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #87968e;
-            color: #87968e;
-            font-size: 24px;
-            margin: 5px;
-        }
-
-        @media (max-width: 1000px) {
-            #key {
-                display: flex;
-            }
-            .game {
-                margin: 20px auto;
-            }
-        }
-    </style>
+		/* Мобильные устройства */
+		@media screen and (min-width: 1000px) {
+			#key {
+				display: none;
+			}
+		}
+		/* Кнопки управления */
+		#key {
+			position: absolute;
+			top: 800px;
+			left: 50%;
+			margin-left: -400px;
+			width: 800px;
+			height: 0;
+		}
+		#key button {
+			position: absolute;
+			width: 150px;
+			height: 150px;
+			border-radius: 30px;
+			outline:none;
+			color: #87968e;
+			font-size: 40px;
+		}
+		.btn_u {
+			top: 0;
+			left: 200px;
+		}
+		.btn_r {
+			top: 200px;
+			left: 400px;
+		}
+		.btn_d {
+			top: 200px;
+			left: 200px;
+		}
+		.btn_l {
+			top: 200px;
+			left: 0;
+		}
+		.btn_a {
+			top: 0;
+			right: 0;
+		}
+		.btn_b {
+			top: 250px;
+			right: 0;
+		}
+	</style>
 </head>
-<body>
-    <!-- Экран активации звука -->
-    <div id="audio-init">
-        <button onclick="initAudio()">ВКЛЮЧИТЬ ЗВУК</button>
-    </div>
-
-    <!-- Основная игровая область -->
-    <div class="game">
-        <div id="text">
-            <p>
-                Управление: W A S D <br><br>
-                Кнопки A/B: H J <br><br>
-                Режимы: Одиночный и Редактор
-            </p>
-        </div>
-        <div id="game-box-border">
-            <div id="game-box"></div>
-            <canvas id="canvas-role" width="416" height="416"></canvas>
-            <canvas id="canvas-bg" width="516" height="456"></canvas>
-            <canvas id="canvas-misc" width="516" height="456"></canvas>
-        </div>
-    </div>
-
-    <!-- Мобильное управление -->
-    <div id="key">
-        <button class="btn_u" value="87">↑</button>
-        <button class="btn_l" value="65">←</button>
-        <button class="btn_r" value="68">→</button>
-        <button class="btn_d" value="83">↓</button>
-        <button class="btn_a" value="74">A</button>
-        <button class="btn_b" value="72">B</button>
-    </div>
-
-    <!-- Ресурсы -->
-    <div class="hide">
-        <img src="src/image/UI.png" id="UI">
-        <img src="src/image/myTank.png" id="myTank">
-        <img src="src/image/enemyTank.png" id="enemyTank">
-        <img src="src/image/bonus.png" id="bonus">
-        <img src="src/image/Misc.png" id="Misc">
-        <img src="src/image/brick.png" id="brick">
-        <img src="src/image/Boom.png" id="boom">
-        <img src="src/image/getScore.png" id="getScore">
-        
+<body onselectstart="return false">
+	<div class="game">
+		<div id="text">
+			<p>
+				Управление: W A S D <br><br>
+				Кнопки A/B: H J <br><br>
+				Доступны одиночный режим и режим редактора карт
+			</p>
+		</div>
+		<div id="game-box-border">
+			<div id="game-box"></div>
+			<!-- Слой с персонажами -->
+			<canvas id="canvas-role" width="416" height="416"></canvas>
+			<!-- Фоновый слой -->
+			<canvas id="canvas-bg" width="516" height="456"></canvas>
+			<!-- Слой эффектов -->
+			<canvas id="canvas-misc" width="516" height="456"></canvas>
+		</div>
+	</div>
+	<div id="key">
+		<button type="button" value="87" class="btn_u">Вверх</button>
+		<button type="button" value="68" class="btn_r">Вправо</button>
+		<button type="button" value="83" class="btn_d">Вниз</button>
+		<button type="button" value="65" class="btn_l">Влево</button>
+		<button type="button" value="74" class="btn_a">A</button>
+		<button type="button" value="72" class="btn_b">B</button>
+	</div>
+	<!-- Прелоад изображений -->
+	<div class="hide">
+		<img src="src/image/UI.png" id="UI">
+		<img src="src/image/myTank.png" id="myTank">
+		<img src="src/image/enemyTank.png" id="enemyTank">
+		<img src="src/image/bonus.png" id="bonus">
+		<img src="src/image/Misc.png" id="Misc">
+		<img src="src/image/brick.png" id="brick">
+		<img src="src/image/Boom.png" id="boom">
+		<img src="src/image/getScore.png" id="getScore">
+	</div>
+	<!-- Прелоад аудио -->
+	<div class="hide">
 		<audio src="src/sound/bonus/life.mp3" id="life"></audio>
 		<audio src="src/sound/bonus/bomb.mp3" id="bomb"></audio>
 		<audio src="src/sound/bonus/misc.mp3" id="miscSound"></audio>
@@ -194,98 +166,22 @@
 		<audio src="src/sound/over.mp3" id="over"></audio>
 		<audio src="src/sound/start.mp3" id="start"></audio>
 	</div>
-    <!-- Скрипты -->
-    <script>
-        let audioContext;
-        let soundEnabled = false;
-        let gameStarted = false;
 
-        // Инициализация аудио
-        function initAudio() {
-            document.getElementById('audio-init').style.display = 'none';
-            
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const bgMusic = document.getElementById('bg-music');
-                bgMusic.loop = true;
-                bgMusic.volume = 0.3;
-                
-                document.getElementById('start').play()
-                    .then(() => {
-                        soundEnabled = true;
-                        bgMusic.play();
-                        startGame();
-                    })
-                    .catch(e => console.error('Ошибка звука:', e));
-            } catch(e) {
-                console.error('Ошибка аудио:', e);
-                alert('Браузер не поддерживает аудио!');
-            }
-        }
-
-        // Воспроизведение звуков
-        function playSound(id) {
-            if (!soundEnabled) return;
-            const audio = document.getElementById(id);
-            if (!audio) return;
-            
-            try {
-                audio.currentTime = 0;
-                audio.play().catch(e => console.warn('Sound error:', id, e));
-            } catch(e) {
-                console.error('Ошибка воспроизведения:', e);
-            }
-        }
-
-        // Запуск игры
-        function startGame() {
-            if (gameStarted) return;
-            gameStarted = true;
-
-            // Инициализация управления
-            document.querySelectorAll('#key button').forEach(btn => {
-                btn.addEventListener('touchstart', e => {
-                    const key = e.target.value;
-                    if (key) handleKeyPress(key);
-                });
-            });
-
-            // Основная инициализация
-            if (typeof init === 'function') init();
-            if (typeof gameLoop === 'function') gameLoop();
-        }
-
-        // Обработчик клавиш
-        function handleKeyPress(key) {
-            // Ваша логика обработки ввода
-        }
-
-        // Полифил для requestAnimationFrame
-        window.requestAnimFrame = (function() {
-            return window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                function(callback) {
-                    window.setTimeout(callback, 1000 / 60);
-                };
-        })();
-    </script>
-
-    <!-- Подключение игровых скриптов -->
-    <script src="src/comm.js"></script>
-    <script src="src/keyboard/key.js"></script>
-    <script src="src/object/explode.js"></script>
-    <script src="src/object/bonus.js"></script>
-    <script src="src/object/mover.js"></script>
-    <script src="src/object/bullet.js"></script>
-    <script src="src/object/tank.js"></script>
-    <script src="src/object/player.js"></script>
-    <script src="src/object/enemyTank.js"></script>
-    <script src="src/UI/UI.js"></script>
-    <script src="src/gameMap/drawMap.js"></script>
-    <script src="src/gameMap/mapEditor.js"></script>
-    <script src="src/gameMap/mapData.js"></script>
-    <script src="src/gameMap/misc.js"></script>
-    <script src="src/gameLoader.js"></script>
+	<!-- Скрипты -->
+	<script type="text/javascript" src='src/comm.js'></script>
+	<script type="text/javascript" src='src/keyboard/key.js'></script>
+	<script type="text/javascript" src='src/object/explode.js'></script>
+	<script type="text/javascript" src='src/object/bonus.js'></script>
+	<script type="text/javascript" src='src/object/mover.js'></script>
+	<script type="text/javascript" src='src/object/bullet.js'></script>
+	<script type="text/javascript" src='src/object/tank.js'></script>
+	<script type="text/javascript" src='src/object/player.js'></script>
+	<script type="text/javascript" src='src/object/enemyTank.js'></script>
+	<script type="text/javascript" src='src/UI/UI.js'></script>
+	<script type="text/javascript" src='src/gameMap/drawMap.js'></script>
+	<script type="text/javascript" src='src/gameMap/mapEditor.js'></script>
+	<script type="text/javascript" src='src/gameMap/mapData.js'></script>
+	<script type="text/javascript" src='src/gameMap/misc.js'></script>
+	<script type="text/javascript" src='src/gameLoader.js'></script>
 </body>
 </html>
-	

@@ -200,7 +200,14 @@ function delay(num, delayNum, fn) {
     }
     return num;
 }
-
+// Пример кода для воспроизведения звука
+function playSound(id) {
+  const audio = document.getElementById(id);
+  if (audio) {
+    audio.currentTime = 0; // Перемотать в начало
+    audio.play().catch(() => {}); // Обработка ошибок
+  }
+}
 /**
  * 等待180个循环进入统计分数的界面，同时重置所有的数据
  */

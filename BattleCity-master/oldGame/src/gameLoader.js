@@ -1,164 +1,129 @@
-// Файл: src/gameLoader.js
 
-/** 
- * Инициализация аудио системы 
- */
-let audioContext;
-const sounds = new Map();
 
+// 1. Добавим глобальные переменные
+let oClass = null;
+let cxt = {
+    bg: null,
+    misc: null
+};
+let draw = {
+    ui: false,
+    setMap: false,
+    map: false,
+    obj: false
+};
+
+// 2. Исправленная проверка на мобильные устройства
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// 3. Инициализация аудио с обработкой ошибок
 function initAudio() {
-  try {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  } catch (error) {
-    console.warn('Web Audio API не поддерживается:', error);
-  }
-}
-
-/**
- * Воспроизведение звука
- */
-function playSound(id) {
-  const audio = document.getElementById(id);
-  if (!audio) return;
-
-  try {
-    // Для мобильных устройств
-    if (audioContext?.state === 'suspended') {
-      audioContext.resume();
+    try {
+        const audio = document.getElementById('start');
+        if (audio) {
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }).catch(e => {
+                console.warn('Audio init error:', e);
+            });
+        }
+    } catch (e) {
+        console.error('Audio system error:', e);
     }
-    
-    audio.currentTime = 0;
-    audio.play().catch(e => {
-      console.error('Ошибка воспроизведения:', id, e);
-    });
-  } catch (error) {
-    console.error('Критическая ошибка звука:', error);
-  }
 }
 
-/** 
- * Инициализация игры 
- */
-let gameInitialized = false;
-
+// 4. Исправленная функция инициализации
 function init() {
-  if (gameInitialized) return;
-  gameInitialized = true;
+    // 4.1. Инициализация канвасов
+    const bgCanvas = document.getElementById('canvas-bg');
+    const miscCanvas = document.getElementById('canvas-misc');
+    
+    if (!bgCanvas || !miscCanvas) {
+        console.error('Canvas elements not found!');
+        return;
+    }
 
-  // Инициализация аудио
-  initAudio();
+    cxt.bg = bgCanvas.getContext('2d');
+    cxt.misc = miscCanvas.getContext('2d');
 
-  // Основные классы
-  window.oClass = {
-    ui: new UI(),
-    mapEditor: new MapEditor(),
-    drawMap: new DrawMap()
-  };
+    // 4.2. Проверка основных классов
+    if (typeof UI !== 'function' || 
+        typeof MapEditor !== 'function' || 
+        typeof DrawMap !== 'function') {
+        console.error('Core classes not defined!');
+        return;
+    }
 
-  // Настройка контекста
-  const setupContext = ctx => {
-    ctx.font = "15px prstart";
-    ctx.fillStyle = '#000';
-    ctx.imageSmoothingEnabled = false;
-  };
+    oClass = {
+        ui: new UI(),
+        mapEditor: new MapEditor(),
+        drawMap: new DrawMap()
+    };
 
-  setupContext(cxt.bg);
-  setupContext(cxt.misc);
-
-  // Управление
-  initControls();
-  oClass.ui.init();
-}
-
-/**
- * Инициализация управления
- */
-function initControls() {
-  // Клавиатура
-  const pressedKeys = new Set();
-  
-  window.addEventListener('keydown', e => {
-    pressedKeys.add(e.key.toLowerCase());
-    handleKeyPress(e.key);
-  });
-
-  window.addEventListener('keyup', e => {
-    pressedKeys.delete(e.key.toLowerCase());
-  });
-
-  // Мобильное управление
-  if (isMobile) {
-    document.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('touchstart', e => {
-        const action = e.target.dataset.action;
-        pressedKeys.add(action);
-        handleKeyPress(action);
-      });
-
-      btn.addEventListener('touchend', e => {
-        pressedKeys.delete(e.target.dataset.action);
-      });
+    // 4.3. Настройка шрифтов
+    const prstartFont = new FontFace('prstart', 'url(font/prstart.ttf)');
+    prstartFont.load().then(() => {
+        document.fonts.add(prstartFont);
+        cxt.bg.font = "15px prstart";
+        cxt.misc.font = "15px prstart";
+    }).catch(e => {
+        console.error('Font loading error:', e);
+        cxt.bg.font = "15px Arial";
+        cxt.misc.font = "15px Arial";
     });
-  }
-}
 
-/** 
- * Основной игровой цикл 
- */
-let lastSoundTime = 0;
+    cxt.bg.fillStyle = '#000';
+    cxt.misc.fillStyle = '#000';
 
-function gameLoop(timestamp) {
-  // Отрисовка интерфейса
-  draw.ui && oClass.ui.draw();
-  
-  // Отрисовка карты
-  draw.setMap && oClass.mapEditor.draw();
-  draw.map && oClass.drawMap.draw(stage.num - 1);
-
-  // Игровая логика
-  if (draw.obj) {
-    drawTank();
-    drawBullet();
-    bonus();
-
-    // Пример воспроизведения звука выстрела
-    if (shootingCondition) {
-      const now = Date.now();
-      if (now - lastSoundTime > 200) {
-        playSound('shoot-sound');
-        lastSoundTime = now;
-      }
+    // 5. Инициализация управления
+    try {
+        keyEvent(); // Убедитесь, что эта функция существует
+        oClass.ui.init();
+    } catch (e) {
+        console.error('Initialization error:', e);
     }
-  }
-
-  requestAnimationFrame(gameLoop);
 }
 
-/** 
- * Запуск игры 
- */
-function startGame() {
-  playSound('start-sound');
-  init();
-  gameLoop();
+// 6. Исправленный игровой цикл
+function gameLoop() {
+    try {
+        // 6.1. Отрисовка элементов
+        if (draw.ui) oClass.ui.draw();
+        if (draw.setMap) oClass.mapEditor.draw();
+        if (draw.map) oClass.drawMap.draw(stage?.num ? stage.num - 1 : 0);
+        
+        // 6.2. Игровая логика
+        if (draw.obj) {
+            drawTank();
+            drawBullet();
+            bonus();
+        }
+
+        // 6.3. Запрос следующего кадра
+        requestAnimationFrame(gameLoop);
+    } catch (e) {
+        console.error('Game loop error:', e);
+    }
 }
 
-// Инициализация
-const isMobile = /* ... */;
-
+// 7. Исправленный запуск игры
 window.addEventListener('load', () => {
-  // Разблокировка аудио
-  const unlock = () => {
-    if (audioContext && audioContext.state !== 'running') {
-      audioContext.resume();
+    // 7.1. Мобильная разблокировка аудио
+    if (isMobile) {
+        document.body.addEventListener('touchstart', initAudio, { once: true });
+    } else {
+        initAudio();
     }
-    document.removeEventListener('click', unlock);
-    document.removeEventListener('touchstart', unlock);
-  };
 
-  document.addEventListener('click', unlock);
-  document.addEventListener('touchstart', unlock);
-
-  // Старт игры
-  startGame();
+    // 7.2. Отложенная инициализация
+    setTimeout(() => {
+        try {
+            init();
+            gameLoop();
+        } catch (e) {
+            console.error('Game boot failed:', e);
+            alert('Ошибка загрузки игры! Проверьте консоль для деталей.');
+        }
+    }, 100);
 });

@@ -1,7 +1,7 @@
 /**
  * 初始化
  */
-// Файл: src/gameLoader.js
+
 
 // Проверка на мобильное устройство и разблокировка звука
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

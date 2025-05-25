@@ -5,6 +5,28 @@
 	<meta name="viewport" content="user-scalable=0">
 	<title>Битва танков</title>
 	<style media="screen">
+		#audio-init {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0,0,0,0.95);
+			z-index: 9999;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		
+		#audio-init button {
+			padding: 20px 40px;
+			font-size: 24px;
+			background: #4CAF50;
+			border: none;
+			border-radius: 5px;
+			color: white;
+			cursor: pointer;
+		}
 		body {
 			margin: 0;
 			color: #87968e;
@@ -116,6 +138,9 @@
 	</style>
 </head>
 <body onselectstart="return false">
+	<div id="audio-init">
+		<button onclick="initAudio()">ВКЛЮЧИТЬ ЗВУК И НАЧАТЬ ИГРУ</button>
+	</div>
 	<div class="game">
 		<div id="text">
 			<p>
@@ -168,6 +193,61 @@
 	</div>
 
 	<!-- Скрипты -->
+	<script>
+		// Глобальные переменные для управления звуком
+		let audioContext;
+		let soundEnabled = false;
+
+		// Функция инициализации аудио
+		function initAudio() {
+			document.getElementById('audio-init').style.display = 'none';
+			
+			try {
+				// Создаем аудио контекст
+				audioContext = new (window.AudioContext || window.webkitAudioContext)();
+				
+				// Загружаем и воспроизводим тестовый звук
+				const testSound = document.getElementById('start');
+				testSound.play()
+					.then(() => {
+						testSound.pause();
+						testSound.currentTime = 0;
+						soundEnabled = true;
+						startGame();
+					})
+					.catch(e => console.error('Ошибка инициализации:', e));
+			} catch(e) {
+				console.error('Web Audio API не поддерживается:', e);
+				alert('Ваш браузер не поддерживает аудио!');
+			}
+		}
+
+		// Модифицированная функция воспроизведения звука
+		function playSound(id) {
+			if (!soundEnabled) return;
+			
+			const audio = document.getElementById(id);
+			if (!audio) return;
+
+			try {
+				audio.currentTime = 0;
+				audio.play().catch(e => console.warn('Ошибка воспроизведения:', id, e));
+			} catch(e) {
+				console.error('Ошибка звука:', e);
+			}
+		}
+
+		// Модифицированная функция запуска игры
+		function startGame() {
+			// Инициализация остальных компонентов игры
+			if (typeof init === 'function') {
+				init();
+			}
+			if (typeof gameLoop === 'function') {
+				gameLoop();
+			}
+		}
+	</script>
 	<script type="text/javascript" src='src/comm.js'></script>
 	<script type="text/javascript" src='src/keyboard/key.js'></script>
 	<script type="text/javascript" src='src/object/explode.js'></script>

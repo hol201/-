@@ -97,6 +97,5 @@ function gameLoop() {
 }
 
 window.onload = function() {
-  init();
-  gameLoop();
+  startGame();
 };
